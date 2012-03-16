@@ -1,2 +1,3 @@
-#Parallax Eddie Robot ROS Driver
-##Under Development
+#Parallax Eddie Robot ROS Driver 
+##HAS BEEN MIGRATED UNDER haikalpribadi-ros-pkg REPOSITORY
+##THIS REPOSITORY IS NO LONGER ACTIVE
