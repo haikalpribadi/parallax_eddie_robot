@@ -32,38 +32,33 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "eddie_ping.h"
+#ifndef _EDDIE_CONTROLLER_H
+#define	_EDDIE_CONTROLLER_H
 
-EddiePing::EddiePing()
+#include "ros/ros.h"
+#include "parallax_eddie_robot/Velocity.h"
+#include "parallax_eddie_robot/DriveWithDistance.h"
+#include "parallax_eddie_robot/DriveWithPower.h"
+#include "parallax_eddie_robot/DriveWithSpeed.h"
+#include "parallax_eddie_robot/Rotate.h"
+#include "parallax_eddie_robot/StopAtDistance.h"
+
+class EddieController
 {
-  ping_pub_ = node_handle_.advertise<parallax_eddie_robot::Distances > ("/eddie/ping_distances", 1);
-  ping_sub_ = node_handle_.subscribe("/eddie/ping_data", 1, &EddiePing::pingCallback, this);
-}
+public:
+  EddieController();
 
-void EddiePing::pingCallback(const parallax_eddie_robot::Ping::ConstPtr& message)
-{
-  parallax_eddie_robot::Distances distances;
-  uint16_t d;
-  if (message->status.substr(0, 5) == "ERROR") // ERROR messages may be longer than 5 if in VERBOSE mode
-  {
-    ROS_INFO("ERROR: Unable to read Ping data from ping sensors");
-    return;
-  }
-  for (uint i = 0; i < message->value.size(); i++)
-  {
-    //OTHER WAYS OF ENCODING THE DATA MAY BE DONE HERE.
-    //DEFAULT DATA REPRESENTS DISTANCE IN MILLIMETERS
-    d = message->value[i];
-    distances.value.push_back(d);
-  }
-  ping_pub_.publish(distances);
-}
+private:
+  ros::NodeHandle node_handle_;
+  ros::Subscriber velocity_sub_;
+  ros::ServiceClient eddie_drive_power_;
+  ros::ServiceClient eddie_turn_;
+  ros::ServiceClient eddie_stop_;
 
-int main(int argc, char** argv)
-{
-  ros::init(argc, argv, "parallax_ping");
-  EddiePing ping;
-  ros::spin();
+  int left_power_, right_power_;
 
-  return 0;
-}
+  void velocityCallback(const parallax_eddie_robot::Velocity::ConstPtr& message);
+};
+
+#endif	/* _EDDIE_CONTROLLER_H */
+

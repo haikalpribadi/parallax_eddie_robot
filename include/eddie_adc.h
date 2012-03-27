@@ -32,38 +32,36 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "eddie_ping.h"
+#ifndef _EDDIE_ADC_H
+#define	_EDDIE_ADC_H
 
-EddiePing::EddiePing()
+#include "ros/ros.h"
+#include "parallax_eddie_robot/ADC.h"
+#include "parallax_eddie_robot/BatteryLevel.h"
+#include "parallax_eddie_robot/Voltages.h"
+
+//=============================================================================//
+// This class is provided as a template for future features on the ADC sensors //
+// The callback function may be modified to adapt to custom configurations of  //
+// ADC sensors. Current (default) settings are for a set of IR distance        //
+// sensors and a battery sensor at the very end                                //
+//=============================================================================//
+
+class EddieADC
 {
-  ping_pub_ = node_handle_.advertise<parallax_eddie_robot::Distances > ("/eddie/ping_distances", 1);
-  ping_sub_ = node_handle_.subscribe("/eddie/ping_data", 1, &EddiePing::pingCallback, this);
-}
+public:
+  EddieADC();
 
-void EddiePing::pingCallback(const parallax_eddie_robot::Ping::ConstPtr& message)
-{
-  parallax_eddie_robot::Distances distances;
-  uint16_t d;
-  if (message->status.substr(0, 5) == "ERROR") // ERROR messages may be longer than 5 if in VERBOSE mode
-  {
-    ROS_INFO("ERROR: Unable to read Ping data from ping sensors");
-    return;
-  }
-  for (uint i = 0; i < message->value.size(); i++)
-  {
-    //OTHER WAYS OF ENCODING THE DATA MAY BE DONE HERE.
-    //DEFAULT DATA REPRESENTS DISTANCE IN MILLIMETERS
-    d = message->value[i];
-    distances.value.push_back(d);
-  }
-  ping_pub_.publish(distances);
-}
+private:
+  ros::NodeHandle node_handle_;
+  ros::Publisher ir_pub_;
+  ros::Publisher battery_pub_;
+  ros::Subscriber adc_sub_;
+  const double ADC_VOLTAGE_DIVIDER;
+  const double BATTERY_VOLTAGE_MULTIPLIER;
 
-int main(int argc, char** argv)
-{
-  ros::init(argc, argv, "parallax_ping");
-  EddiePing ping;
-  ros::spin();
+  void adcCallback(const parallax_eddie_robot::ADC::ConstPtr& message);
+};
 
-  return 0;
-}
+#endif	/* _EDDIE_ADC_H */
+

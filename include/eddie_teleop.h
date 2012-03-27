@@ -32,38 +32,40 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "eddie_ping.h"
+#ifndef _EDDIE_TELEOP_H
+#define	_EDDIE_TELEOP_H
 
-EddiePing::EddiePing()
+#include "ros/ros.h"
+#include <signal.h>
+#include <termios.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include "parallax_eddie_robot/Velocity.h"
+#include "parallax_eddie_robot/KeyStroke.h"
+
+#define KEYCODE_U 0x41
+#define KEYCODE_D 0x42
+#define KEYCODE_R 0x43
+#define KEYCODE_L 0x44
+
+
+int kfd = 0;
+struct termios cooked, raw;
+
+class EddieTeleop
 {
-  ping_pub_ = node_handle_.advertise<parallax_eddie_robot::Distances > ("/eddie/ping_distances", 1);
-  ping_sub_ = node_handle_.subscribe("/eddie/ping_data", 1, &EddiePing::pingCallback, this);
-}
+public:
+  EddieTeleop();
+  void keyLoop();
 
-void EddiePing::pingCallback(const parallax_eddie_robot::Ping::ConstPtr& message)
-{
-  parallax_eddie_robot::Distances distances;
-  uint16_t d;
-  if (message->status.substr(0, 5) == "ERROR") // ERROR messages may be longer than 5 if in VERBOSE mode
-  {
-    ROS_INFO("ERROR: Unable to read Ping data from ping sensors");
-    return;
-  }
-  for (uint i = 0; i < message->value.size(); i++)
-  {
-    //OTHER WAYS OF ENCODING THE DATA MAY BE DONE HERE.
-    //DEFAULT DATA REPRESENTS DISTANCE IN MILLIMETERS
-    d = message->value[i];
-    distances.value.push_back(d);
-  }
-  ping_pub_.publish(distances);
-}
+private:
+  ros::NodeHandle node_handle_;
+  ros::Publisher velocity_pub_;
+  ros::Publisher keystroke_pub_;
+  float linear_, angular_;
+  double l_scale_, a_scale_;
 
-int main(int argc, char** argv)
-{
-  ros::init(argc, argv, "parallax_ping");
-  EddiePing ping;
-  ros::spin();
+};
 
-  return 0;
-}
+#endif	/* _EDDIE_TELEOP_H */
+
