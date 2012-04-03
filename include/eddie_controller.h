@@ -35,13 +35,13 @@
 #ifndef _EDDIE_CONTROLLER_H
 #define	_EDDIE_CONTROLLER_H
 
-#include "ros/ros.h"
-#include "parallax_eddie_robot/Velocity.h"
-#include "parallax_eddie_robot/DriveWithDistance.h"
-#include "parallax_eddie_robot/DriveWithPower.h"
-#include "parallax_eddie_robot/DriveWithSpeed.h"
-#include "parallax_eddie_robot/Rotate.h"
-#include "parallax_eddie_robot/StopAtDistance.h"
+#include <ros/ros.h>
+#include <parallax_eddie_robot/Velocity.h>
+#include <parallax_eddie_robot/DriveWithDistance.h>
+#include <parallax_eddie_robot/DriveWithPower.h>
+#include <parallax_eddie_robot/DriveWithSpeed.h>
+#include <parallax_eddie_robot/Rotate.h>
+#include <parallax_eddie_robot/StopAtDistance.h>
 
 class EddieController
 {
@@ -55,9 +55,14 @@ private:
   ros::ServiceClient eddie_turn_;
   ros::ServiceClient eddie_stop_;
 
-  int left_power_, right_power_;
+  int left_power_, right_power_, rotation_speed_;
 
   void velocityCallback(const parallax_eddie_robot::Velocity::ConstPtr& message);
+  void stop();
+  int8_t clipPower(int power_unit, float linear);
+  void moveLinear(float linear);
+  void moveAngular(int16_t angular);
+  void moveLinearAngular(float linear, int16_t angular);
 };
 
 #endif	/* _EDDIE_CONTROLLER_H */
